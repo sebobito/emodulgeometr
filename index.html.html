@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Mengisi kotak dengan blok satuan</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600&display=swap">
+<style>
+:root{
+  --dasar:#E7ECF3; --panel:#FFFFFF; --tinta:#1B2440; --redup:#56607D;
+  --blok:#EBAA1F; --blok-dalam:#4E1C20; --garis:#1B2440; --aksen:#8A2B3A;
+  --petak:#C5CEDD; --tombol:#1B2440; --tombol-teks:#FFFFFF; --tombol2:#D8DFEA;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --dasar:#111728; --panel:#1A2238; --tinta:#EEF1F8; --redup:#A3ACC4;
+    --blok:#EBAA1F; --blok-dalam:#8A4A3C; --garis:#0B1020; --aksen:#F08A9B;
+    --petak:#3A4563; --tombol:#EBAA1F; --tombol-teks:#141A2C; --tombol2:#2A3350;
+  }
+}
+:root[data-theme="dark"]{
+  --dasar:#111728; --panel:#1A2238; --tinta:#EEF1F8; --redup:#A3ACC4;
+  --blok:#EBAA1F; --blok-dalam:#8A4A3C; --garis:#0B1020; --aksen:#F08A9B;
+  --petak:#3A4563; --tombol:#EBAA1F; --tombol-teks:#141A2C; --tombol2:#2A3350;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{
+  margin:0; background:var(--dasar); color:var(--tinta);
+  font-family:"Fredoka","Trebuchet MS","Segoe UI",system-ui,sans-serif;
+  font-size:1.0625rem; line-height:1.45;
+}
+main{max-width:66rem; margin:0 auto; padding:1.5rem 1rem 2.5rem}
+h1{font-size:clamp(1.6rem,4.5vw,2.4rem); font-weight:600; line-height:1.15; margin:0 0 .4rem}
+.pengantar{margin:0 0 1.5rem; color:var(--redup); max-width:38rem}
+
+.tata{display:grid; gap:1.25rem; grid-template-columns:minmax(0,1.25fr) minmax(0,1fr); align-items:start}
+@media (max-width:760px){.tata{grid-template-columns:minmax(0,1fr)}}
+
+.area-kotak{background:var(--panel); border-radius:1.25rem; padding:1.25rem}
+.bingkai{display:grid; grid-template-columns:auto minmax(0,1fr); gap:.5rem .6rem; justify-content:center}
+.ukur-lebar{
+  writing-mode:vertical-rl; transform:rotate(180deg); text-align:center;
+  color:var(--redup); font-size:.95rem; border-left:2px solid var(--petak); padding-left:.35rem;
+}
+.ukur-panjang{
+  grid-column:2; text-align:center; color:var(--redup); font-size:.95rem;
+  border-top:2px solid var(--petak); padding-top:.3rem; width:min(100%,calc(var(--k)*3.5rem));
+}
+.papan{
+  display:grid; grid-template-columns:repeat(var(--k),1fr); gap:3px;
+  width:min(100%,calc(var(--k)*3.5rem));
+}
+.petak{
+  aspect-ratio:1; border:2px dashed var(--petak); border-radius:.3rem;
+  display:grid; place-items:center; position:relative; min-width:0;
+  font-size:clamp(.6rem,2.2vw,1rem); font-weight:500; color:transparent;
+}
+.petak.isi{background:#6E2B2E url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' fill='%236E2B2E'/%3E%3Cpath d='M0 0h10L0 10zM40 0v10L30 0zM0 40V30l10 10zM40 40H30l10-10z' fill='%23E3B85A'/%3E%3Cpath d='M20 2.5 37.5 20 20 37.5 2.5 20z' fill='none' stroke='%23E3B85A' stroke-width='2.4'/%3E%3Cpath d='M20 8.5 31.5 20 20 31.5 8.5 20z' fill='%231F2A4D' stroke='%23F4E6BE' stroke-width='1.4'/%3E%3Cpath d='M20 5.2v-2M20 36.8v-2M5.2 20h-2M36.8 20h-2' stroke='%23F4E6BE' stroke-width='1.4'/%3E%3C/svg%3E") center/100% 100% no-repeat; border:2px solid var(--garis); color:#F7ECD0; font-weight:600; overflow:hidden}
+.petak span{position:relative}
+.papan.tanpa-nomor .petak span{visibility:hidden}
+.petak.baru{animation:jatuh .38s cubic-bezier(.3,1.5,.5,1) backwards}
+@keyframes jatuh{from{transform:translateY(-140%) scale(.8); opacity:0}}
+
+.sisi{display:grid; gap:1.25rem}
+.hasil{background:var(--panel); border-radius:1.25rem; padding:1.25rem}
+.hasil p{margin:0}
+.label-luas{color:var(--redup)}
+.angka{font-size:clamp(3.5rem,12vw,5.5rem); font-weight:600; line-height:1; color:var(--aksen); display:inline-block}
+.angka.naik{animation:denyut .3s ease-out}
+@keyframes denyut{40%{transform:scale(1.18)}}
+.satuan{font-size:1.15rem; margin-left:.3rem}
+.hitungan{margin-top:.75rem !important; font-size:1.15rem; font-weight:500; min-height:3.2em}
+.terisi{margin-top:.5rem !important; color:var(--redup); font-size:.95rem}
+
+.kendali{background:var(--panel); border-radius:1.25rem; padding:1.25rem; display:grid; gap:1rem}
+.tombol-baris{display:flex; flex-wrap:wrap; gap:.5rem}
+button{
+  font:inherit; font-weight:500; border:0; border-radius:.7rem; padding:.65rem 1rem;
+  background:var(--tombol2); color:var(--tinta); cursor:pointer;
+}
+button.utama{background:var(--tombol); color:var(--tombol-teks); flex:1 1 100%; font-size:1.2rem; padding:.85rem 1rem}
+button:disabled{opacity:.4; cursor:not-allowed}
+button:focus-visible,input:focus-visible{outline:3px solid var(--aksen); outline-offset:2px}
+.geser{display:grid; gap:.15rem}
+.geser label{display:flex; justify-content:space-between}
+.geser output{font-weight:600}
+input[type=range]{width:100%; accent-color:var(--aksen)}
+.centang{display:flex; gap:.5rem; align-items:center}
+.centang input{width:1.15rem; height:1.15rem; accent-color:var(--aksen)}
+.catatan{color:var(--redup); font-size:.9rem; margin:0}
+
+.petak.taruh{animation:tempel .25s ease-out backwards}
+@keyframes tempel{from{transform:scale(1.25)}}
+.papan,.tumpukan{user-select:none; -webkit-user-select:none; -webkit-touch-callout:none; -webkit-tap-highlight-color:transparent}
+.papan .petak.isi,.sumber{touch-action:none; cursor:grab}
+.petak.sasaran{border:2px solid var(--aksen); background:var(--tombol2)}
+.tumpukan{display:flex; align-items:center; gap:.9rem; margin-top:1.25rem; padding-top:1rem; border-top:2px solid var(--dasar)}
+.sumber{width:3.5rem; flex:none; box-shadow:4px 4px 0 var(--blok-dalam), 8px 8px 0 var(--petak)}
+.tumpukan p{margin:0; color:var(--redup); font-size:.95rem}
+.hantu{position:fixed; z-index:10; pointer-events:none; margin:0; cursor:grabbing;
+  transform:translate(-50%,-50%) rotate(-5deg) scale(1.08); box-shadow:0 8px 18px rgba(10,16,32,.35)}
+body.menyeret{cursor:grabbing}
+@media (prefers-reduced-motion:reduce){.petak.baru,.petak.taruh,.angka.naik{animation:none}}
+</style>
+</head>
+<body>
+<main>
+  <h1>Mengisi kotak dengan blok satuan</h1>
+  <p class="pengantar">Setiap blok menutup 1 satuan persegi. Seret blok ke dalam kotak, lalu amati bagaimana luasnya bertambah.</p>
+
+  <div class="tata">
+    <section class="area-kotak" aria-label="Kotak dan blok">
+      <div class="bingkai" id="bingkai">
+        <div class="ukur-lebar" id="ukurLebar"></div>
+        <div class="papan" id="papan" role="img"></div>
+        <div class="ukur-panjang" id="ukurPanjang"></div>
+      </div>
+      <div class="tumpukan">
+        <div class="petak isi sumber" id="sumber" aria-hidden="true"><span></span></div>
+        <p>Seret blok ini ke petak kosong di dalam kotak. Blok di dalam kotak bisa dipindahkan, atau diseret keluar kotak untuk diambil.</p>
+      </div>
+    </section>
+
+    <div class="sisi">
+      <section class="hasil" aria-live="polite">
+        <p class="label-luas">Luas yang tertutup blok</p>
+        <p><span class="angka" id="angka">0</span><span class="satuan">satuan persegi</span></p>
+        <p class="hitungan" id="hitungan"></p>
+        <p class="terisi" id="terisi"></p>
+      </section>
+
+      <section class="kendali" aria-label="Kendali">
+        <div class="tombol-baris">
+          <button class="utama" id="tambah">Tambah 1 blok</button>
+          <button id="baris">Lengkapi baris</button>
+          <button id="ambil">Ambil 1 blok</button>
+          <button id="otomatis">Isi otomatis</button>
+          <button id="kosong">Kosongkan kotak</button>
+        </div>
+        <div class="geser">
+          <label for="panjang">Panjang kotak <output id="outPanjang"></output></label>
+          <input type="range" id="panjang" min="1" max="10" value="5">
+        </div>
+        <div class="geser">
+          <label for="lebar">Lebar kotak <output id="outLebar"></output></label>
+          <input type="range" id="lebar" min="1" max="8" value="4">
+        </div>
+        <label class="centang"><input type="checkbox" id="nomor" checked> Tampilkan nomor pada blok</label>
+        <p class="catatan">Mengubah ukuran kotak akan mengosongkan kotak.</p>
+      </section>
+    </div>
+  </div>
+</main>
+
+<script>
+(function(){
+  var $ = function(id){ return document.getElementById(id); };
+  var papan = $('papan'), angka = $('angka'), hitungan = $('hitungan'), terisi = $('terisi');
+  var kolom = 5, barisMaks = 4, urut = [], anim = {}, jumlahLama = 0, pewaktu = null, seret = null;
+
+  function total(){ return kolom * barisMaks; }
+  function kosongBerikut(){
+    for (var i = 0; i < total(); i++) if (urut.indexOf(i) < 0) return i;
+    return -1;
+  }
+
+  function gambar(){
+    var html = '', jumlah = urut.length, penuh = 0;
+    papan.style.setProperty('--k', kolom);
+    $('bingkai').style.setProperty('--k', kolom);
+    for (var r = barisMaks - 1; r >= 0; r--){
+      var isiBaris = 0;
+      for (var c = 0; c < kolom; c++){
+        var i = r * kolom + c, pos = urut.indexOf(i), kelas = 'petak', gaya = '';
+        if (pos >= 0){
+          isiBaris++;
+          kelas += ' isi';
+          if (anim[i]){ kelas += ' ' + anim[i].k; gaya = ' style="animation-delay:' + anim[i].d + 'ms"'; }
+        }
+        html += '<div class="' + kelas + '" data-i="' + i + '"' + gaya + '><span>' + (pos >= 0 ? pos + 1 : '') + '</span></div>';
+      }
+      if (isiBaris === kolom) penuh++;
+    }
+    anim = {};
+    papan.innerHTML = html;
+    papan.setAttribute('aria-label', 'Kotak ' + kolom + ' kali ' + barisMaks + ' petak, terisi ' + jumlah + ' blok');
+
+    if (jumlah !== jumlahLama){
+      angka.classList.remove('naik'); void angka.offsetWidth;
+      if (jumlah > jumlahLama) angka.classList.add('naik');
+    }
+    jumlahLama = jumlah;
+    angka.textContent = jumlah;
+
+    var sisa = jumlah - penuh * kolom, teks;
+    if (jumlah === 0) teks = 'Kotak masih kosong. Seret blok dari tumpukan ke dalam kotak.';
+    else if (jumlah === total()) teks = 'Kotak penuh. Luas kotak = panjang × lebar = ' + kolom + ' × ' + barisMaks + ' = ' + jumlah + ' satuan persegi.';
+    else if (penuh === 0) teks = sisa + ' blok = ' + sisa + ' satuan persegi';
+    else if (sisa === 0) teks = penuh + ' baris penuh × ' + kolom + ' blok = ' + jumlah + ' satuan persegi';
+    else teks = penuh + ' baris penuh × ' + kolom + ' blok + ' + sisa + ' blok = ' + jumlah + ' satuan persegi';
+    hitungan.textContent = teks;
+    terisi.textContent = 'Terisi ' + jumlah + ' dari ' + total() + ' petak';
+
+    $('ukurPanjang').textContent = 'panjang ' + kolom + ' satuan';
+    $('ukurLebar').textContent = 'lebar ' + barisMaks + ' satuan';
+    $('outPanjang').textContent = kolom;
+    $('outLebar').textContent = barisMaks;
+
+    var sudahPenuh = jumlah >= total();
+    $('tambah').disabled = $('baris').disabled = sudahPenuh;
+    $('ambil').disabled = $('kosong').disabled = jumlah === 0;
+    $('otomatis').disabled = sudahPenuh && !pewaktu;
+    $('otomatis').textContent = pewaktu ? 'Jeda' : 'Isi otomatis';
+    $('sumber').style.opacity = sudahPenuh ? .35 : 1;
+  }
+
+  function berhenti(){ if (pewaktu){ clearInterval(pewaktu); pewaktu = null; } }
+  function tambahSatu(){
+    var i = kosongBerikut();
+    if (i >= 0){ urut.push(i); anim[i] = {k:'baru', d:0}; }
+    if (urut.length >= total()) berhenti();
+    gambar();
+  }
+
+  $('tambah').onclick = tambahSatu;
+  $('ambil').onclick = function(){ berhenti(); urut.pop(); gambar(); };
+  $('baris').onclick = function(){
+    for (var r = 0; r < barisMaks; r++){
+      var n = 0;
+      for (var c = 0; c < kolom; c++){
+        var i = r * kolom + c;
+        if (urut.indexOf(i) < 0){ urut.push(i); anim[i] = {k:'baru', d:n * 70}; n++; }
+      }
+      if (n) break;
+    }
+    if (urut.length >= total()) berhenti();
+    gambar();
+  };
+  $('kosong').onclick = function(){ berhenti(); urut = []; gambar(); };
+  $('otomatis').onclick = function(){
+    if (pewaktu){ berhenti(); gambar(); return; }
+    pewaktu = setInterval(tambahSatu, 550);
+    gambar();
+  };
+  $('panjang').oninput = function(){ berhenti(); kolom = +this.value; urut = []; gambar(); };
+  $('lebar').oninput = function(){ berhenti(); barisMaks = +this.value; urut = []; gambar(); };
+  $('nomor').onchange = function(){ papan.classList.toggle('tanpa-nomor', !this.checked); };
+
+  /* Menyeret blok */
+  function petakDi(x, y){
+    var el = document.elementFromPoint(x, y);
+    el = el && el.closest ? el.closest('#papan .petak') : null;
+    return el && !el.classList.contains('isi') ? el : null;
+  }
+  function mulaiSeret(e, asal, elAsal){
+    if (seret || (e.button !== undefined && e.button > 0)) return;
+    if (asal < 0 && urut.length >= total()) return;
+    e.preventDefault();
+    try { e.target.setPointerCapture(e.pointerId); } catch (err) {}
+    berhenti();
+    var contoh = papan.querySelector('.petak'), sisi = contoh ? contoh.getBoundingClientRect().width : 56;
+    var hantu = document.createElement('div');
+    hantu.className = 'petak isi hantu';
+    hantu.style.width = hantu.style.height = sisi + 'px';
+    document.body.appendChild(hantu);
+    document.body.classList.add('menyeret');
+    if (elAsal){ elAsal.classList.remove('isi'); elAsal.firstChild.textContent = ''; }
+    seret = {asal:asal, hantu:hantu, sasaran:null};
+    gerak(e);
+    document.addEventListener('pointermove', gerak);
+    document.addEventListener('pointerup', lepas);
+    document.addEventListener('pointercancel', batal);
+    document.addEventListener('touchmove', tahan, {passive:false});
+  }
+  function tahan(e){ if (seret && e.cancelable) e.preventDefault(); }
+  function gerak(e){
+    if (!seret) return;
+    seret.hantu.style.left = e.clientX + 'px';
+    seret.hantu.style.top = e.clientY + 'px';
+    var t = petakDi(e.clientX, e.clientY);
+    if (t !== seret.sasaran){
+      if (seret.sasaran) seret.sasaran.classList.remove('sasaran');
+      if (t) t.classList.add('sasaran');
+      seret.sasaran = t;
+    }
+  }
+  function selesai(){
+    document.removeEventListener('pointermove', gerak);
+    document.removeEventListener('pointerup', lepas);
+    document.removeEventListener('pointercancel', batal);
+    document.removeEventListener('touchmove', tahan);
+    seret.hantu.remove();
+    document.body.classList.remove('menyeret');
+    seret = null;
+    gambar();
+  }
+  function lepas(e){
+    if (!seret) return;
+    var t = petakDi(e.clientX, e.clientY), asal = seret.asal;
+    if (t){
+      var i = +t.getAttribute('data-i');
+      if (asal >= 0) urut[urut.indexOf(asal)] = i; else urut.push(i);
+      anim[i] = {k:'taruh', d:0};
+    } else if (asal >= 0){
+      var k = papan.getBoundingClientRect();
+      var diLuar = e.clientX < k.left || e.clientX > k.right || e.clientY < k.top || e.clientY > k.bottom;
+      if (diLuar) urut.splice(urut.indexOf(asal), 1);
+    }
+    selesai();
+  }
+  function batal(){ if (seret) selesai(); }
+
+  $('sumber').addEventListener('pointerdown', function(e){ mulaiSeret(e, -1, null); });
+  papan.addEventListener('pointerdown', function(e){
+    var el = e.target.closest ? e.target.closest('.petak.isi') : null;
+    if (el) mulaiSeret(e, +el.getAttribute('data-i'), el);
+  });
+
+  [papan, $('sumber')].forEach(function(el){
+    el.addEventListener('contextmenu', function(e){ e.preventDefault(); });
+    el.addEventListener('dragstart', function(e){ e.preventDefault(); });
+  });
+
+  gambar();
+})();
+</script>
+</body>
+</html>
